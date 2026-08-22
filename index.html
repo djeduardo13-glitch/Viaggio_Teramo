@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Teramo">
+<link rel="manifest" href="manifest.json">
+<title>Viaggio Teramo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f4f0;--bg2:#eceae4;--sur:#fff;--brd:#dddbd4;--tx:#1a1916;--tx2:#6b6960;--ac:#2563eb;--acbg:#eff4ff;--gr:#16a34a;--grbg:#f0fdf4;--rd:#dc2626;--rdbg:#fef2f2;--am:#d97706;--sh:0 1px 3px rgba(0,0,0,.08);--shm:0 4px 12px rgba(0,0,0,.1);--r:12px;--rs:8px}
+[data-dark]{--bg:#141414;--bg2:#1c1c1c;--sur:#222;--brd:#333;--tx:#f0eeea;--tx2:#888580;--ac:#3b82f6;--acbg:#1e2a3a;--gr:#22c55e;--grbg:#0f2318;--rd:#f87171;--rdbg:#2a1414;--am:#fbbf24;--sh:0 1px 3px rgba(0,0,0,.3);--shm:0 4px 12px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:60px}
+
+/* header */
+.hdr{background:var(--sur);border-bottom:1px solid var(--brd);padding:14px 16px;position:sticky;top:0;z-index:50;box-shadow:var(--sh)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.htitle{font-size:1.1rem;font-weight:800}
+.hdate{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--tx2);margin-top:2px}
+.theme-btn{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer}
+.counters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cc{background:var(--bg2);border-radius:var(--rs);padding:8px 12px;display:flex;align-items:center;gap:10px}
+.ci{font-size:1.2rem}
+.cl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2)}
+.cv{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1.1}
+.cc.bus .cv{color:var(--ac)}
+.cc.htl .cv{color:var(--gr)}
+.money-card{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.money-left{display:flex;align-items:center;gap:10px}
+.money-info{display:flex;flex-direction:column}
+.money-val{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--am);line-height:1.1}
+.price-set{display:flex;align-items:center;gap:5px}
+.price-set span{font-size:.68rem;color:var(--tx2);font-weight:600}
+.price-inp{width:64px;background:var(--sur);border:1.5px solid var(--brd);border-radius:6px;padding:5px 7px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;text-align:right}
+.price-inp:focus{border-color:var(--am)}
+
+/* toolbar */
+.toolbar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--brd);overflow-x:auto}
+.toolbar::-webkit-scrollbar{display:none}
+.tbtn{font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;padding:7px 12px;border-radius:20px;border:1.5px solid var(--brd);background:var(--sur);color:var(--tx);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tbtn.bl{border-color:var(--ac);color:var(--ac)}
+.tbtn.gr{border-color:var(--gr);color:var(--gr)}
+.tbtn.am{border-color:var(--am);color:var(--am)}
+
+/* tabs */
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--sur);border-bottom:2px solid var(--brd)}
+.tab{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;padding:13px 8px;border:none;background:none;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.on{color:var(--ac);border-bottom-color:var(--ac)}
+
+/* panels */
+.panel{display:none;padding:16px}
+.panel.on{display:block}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sec-lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2)}
+.sec-info{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--tx2)}
+
+/* add form */
+.add-form{margin-bottom:14px}
+.add-row{display:flex;gap:8px;margin-bottom:6px}
+.add-row:last-child{margin-bottom:0}
+.finp{flex:1;background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--rs);padding:11px 13px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;min-width:0}
+.finp:focus{border-color:var(--ac)}
+.finp::placeholder{color:var(--tx2)}
+.finp.sm{padding:9px 13px;font-size:.85rem}
+.btn-add{font-family:'Inter',sans-serif;font-weight:700;font-size:.85rem;padding:11px 16px;border:none;border-radius:var(--rs);background:var(--ac);color:#fff;cursor:pointer;flex-shrink:0}
+
+/* person list */
+.plist{display:flex;flex-direction:column;gap:6px}
+.pitem{display:flex;align-items:center;gap:9px;background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--r);padding:11px 12px;box-shadow:var(--sh)}
+.pitem.paid{border-color:var(--gr);background:var(--grbg)}
+.pnum{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--tx2);width:16px;text-align:right;flex-shrink:0}
+.ptog{width:24px;height:24px;border-radius:6px;border:2px solid var(--brd);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:transparent;transition:all .15s}
+.ptog.on{background:var(--gr);border-color:var(--gr);color:#fff}
+.pinfo{flex:1;min-width:0}
+.pname{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paid .pname{color:var(--gr)}
+.ploc{font-size:.72rem;color:var(--tx2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbadge{font-family:'JetBrains Mono',monospace;font-size:.6rem;background:var(--grbg);color:var(--gr);border:1px solid var(--gr);padding:2px 6px;border-radius:20px;display:none;flex-shrink:0}
+.paid .pbadge{display:inline}
+.pacts{display:flex;gap:4px;flex-shrink:0}
+.abtn{width:32px;height:32px;border-radius:7px;border:1.5px solid var(--brd);background:var(--bg2);color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.abtn.red{border-color:transparent;color:var(--rd);background:var(--rdbg)}
+.abtn.blue{background:var(--ac);color:#fff;border-color:var(--ac);font-size:.75rem;font-weight:700;width:auto;padding:0 10px;font-family:'Inter',sans-serif}
+.einp{background:var(--bg);border:1.5px solid var(--ac);border-radius:6px;padding:5px 9px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.88rem;font-weight:600;outline:none;width:100%}
+.einp.sm{font-size:.75rem;margin-top:3px}
+
+/* empty */
+.empty{text-align:center;padding:32px 20px;color:var(--tx2);font-size:.85rem}
+.empty .ei{font-size:2rem;margin-bottom:8px}
+
+/* camere */
+.ubox{background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--r);padding:12px;margin-bottom:16px;box-shadow:var(--sh)}
+.utitle{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:8px;display:flex;justify-content:space-between}
+.badge{font-family:'JetBrains Mono',monospace;font-size:.7rem;background:var(--acbg);color:var(--ac);padding:2px 8px;border-radius:20px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:5px 10px;font-size:.8rem;font-weight:500}
+.etxt{font-size:.8rem;color:var(--tx2);font-style:italic}
+.rhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.btn-nr{font-family:'Inter',sans-serif;font-size:.8rem;font-weight:700;padding:8px 14px;border:none;border-radius:20px;background:var(--ac);color:#fff;cursor:pointer}
+.rlist{display:flex;flex-direction:column;gap:10px}
+.rcard{background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.rhead{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--brd)}
+.rninp{flex:1;background:transparent;border:none;font-family:'Inter',sans-serif;font-size:.9rem;font-weight:700;color:var(--tx);outline:none;min-width:0}
+.rcap{font-family:'JetBrains Mono',monospace;font-size:.72rem;padding:3px 8px;border-radius:20px;background:var(--acbg);color:var(--ac);flex-shrink:0}
+.rcap.full{background:var(--grbg);color:var(--gr)}
+.delbtn{background:transparent;border:none;color:var(--tx2);cursor:pointer;font-size:1rem;padding:2px;flex-shrink:0}
+.rbody{padding:10px 12px}
+.rguests{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.rgitem{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:8px 10px;font-size:.86rem;font-weight:500}
+.rgdel{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:1rem;padding:0 4px}
+.rawrap{position:relative}.rainp{width:100%;background:var(--bg);border:1.5px dashed var(--brd);border-radius:8px;padding:9px 12px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.86rem;outline:none}
+.rainp:focus{border-color:var(--ac);border-style:solid}
+.rainp::placeholder{color:var(--tx2)}
+.acdrop{position:fixed;background:var(--sur);border:1.5px solid var(--brd);border-radius:10px;z-index:500;overflow:hidden;display:none;box-shadow:var(--shm)}
+.acdrop.on{display:block}
+.acopt{padding:11px 14px;font-size:.86rem;font-weight:500;cursor:pointer;border-bottom:1px solid var(--brd)}
+.acopt:last-child{border-bottom:none}
+.acopt.sel,.acopt:active{background:var(--acbg);color:var(--ac)}
+.rfull{text-align:center;font-size:.78rem;color:var(--gr);font-weight:600;padding:4px 0}
+
+/* modal */
+.mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
+.mov.on{display:flex}
+.modal{background:var(--sur);border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px}
+.mh{width:40px;height:4px;background:var(--brd);border-radius:2px;margin:0 auto 18px}
+.modal h2{font-size:1.05rem;font-weight:800;margin-bottom:16px}
+.modal label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);display:block;margin-bottom:5px;margin-top:12px}
+.modal input{width:100%;background:var(--bg);border:1.5px solid var(--brd);border-radius:9px;padding:12px 14px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.95rem;outline:none}
+.modal input:focus{border-color:var(--ac)}
+.macts{display:flex;gap:8px;margin-top:20px}
+.macts button{flex:1;font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem;padding:13px;border-radius:10px;border:none;cursor:pointer}
+.mcan{background:var(--bg2);color:var(--tx2);border:1.5px solid var(--brd) !important}
+.mok{background:var(--ac);color:#fff}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--tx);color:var(--bg);border-radius:20px;padding:10px 20px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--brd);border-radius:4px}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="htitle">🚌 Viaggio a Teramo</div>
+      <div class="hdate">10 → 11 Ottobre · Organizzazione</div>
+    </div>
+    <button class="theme-btn" id="tbtn" onclick="toggleTheme()">🌙</button>
+  </div>
+  <div class="counters">
+    <div class="cc bus"><span class="ci">🚌</span><div><div class="cl">Posti rimasti</div><div class="cv" id="cbus">60</div></div></div>
+    <div class="cc htl"><span class="ci">🏨</span><div><div class="cl">Senza camera</div><div class="cv" id="chtl">0</div></div></div>
+  </div>
+  <div class="money-card">
+    <div class="money-left">
+      <span class="ci">💶</span>
+      <div class="money-info">
+        <div class="cl">Incassato</div>
+        <div class="money-val" id="cmoney">€ 0</div>
+      </div>
+    </div>
+    <div class="price-set">
+      <span>€/persona</span>
+      <input type="number" class="price-inp" id="price-inp" min="0" step="0.5" placeholder="0" oninput="setPrice(this.value)">
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button class="tbtn bl" onclick="saveLocal()">💾 Salva</button>
+  <button class="tbtn gr" onclick="exportJSON()">⬇ Esporta JSON</button>
+  <button class="tbtn am" onclick="document.getElementById('impf').click()">⬆ Importa JSON</button>
+  <button class="tbtn am" onclick="exportLista()">📋 Lista bus</button>
+  <input type="file" id="impf" accept=".json" style="display:none" onchange="importJSON(event)">
+</div>
+
+<div class="tabs">
+  <button class="tab on" id="tab-bus" onclick="goTab('bus')">🚌 Bus</button>
+  <button class="tab" id="tab-cam" onclick="goTab('cam')">🏨 Camere</button>
+</div>
+
+<!-- BUS -->
+<div class="panel on" id="panel-bus">
+  <div class="sec-hdr">
+    <span class="sec-lbl">Partecipanti</span>
+    <span class="sec-info" id="pinfo"></span>
+  </div>
+  <div class="add-form">
+    <div class="add-row">
+      <input class="finp" id="inp-nome" type="text" placeholder="Nome e cognome..." onkeydown="if(event.key==='Enter')document.getElementById('inp-loc').focus()">
+      <button class="btn-add" onclick="addPerson()">+ Aggiungi</button>
+    </div>
+    <div class="add-row">
+      <input class="finp sm" id="inp-loc" type="text" placeholder="📍 Località (opzionale)" onkeydown="if(event.key==='Enter')addPerson()">
+    </div>
+  </div>
+  <div id="plist"></div>
+</div>
+
+<!-- CAMERE -->
+<div class="panel" id="panel-cam">
+  <div class="ubox">
+    <div class="utitle"><span>Senza camera</span><span class="badge" id="ucnt">0</span></div>
+    <div id="ulist"><span class="etxt">Tutti assegnati 🎉</span></div>
+  </div>
+  <div class="rhdr">
+    <span class="sec-lbl">Camere</span>
+    <button class="btn-nr" onclick="openModal()">＋ Nuova camera</button>
+  </div>
+  <div id="rlist"></div>
+</div>
+
+<!-- MODAL -->
+<div class="mov" id="rmod">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2>🏨 Nuova Camera</h2>
+    <label>Posti letto</label>
+    <input type="number" id="rbeds" placeholder="es. 3" min="1" max="20" onkeydown="if(event.key==='Enter')createRoom()">
+    <div class="macts">
+      <button class="mcan" onclick="closeModal()">Annulla</button>
+      <button class="mok" onclick="createRoom()">Crea</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let P = [], R = [], nid = 1, price = 0;
+const SK = 'teramo_v3';
+
+// ── THEME ──
+function toggleTheme() {
+  const on = document.documentElement.hasAttribute('data-dark');
+  if (on) document.documentElement.removeAttribute('data-dark');
+  else document.documentElement.setAttribute('data-dark', '');
+  document.getElementById('tbtn').textContent = on ? '🌙' : '☀️';
+  localStorage.setItem('t_theme', on ? '' : '1');
+}
+if (localStorage.getItem('t_theme') === '1') {
+  document.documentElement.setAttribute('data-dark', '');
+  document.getElementById('tbtn').textContent = '☀️';
+}
+
+// ── TABS ──
+function goTab(t) {
+  document.getElementById('tab-bus').classList.toggle('on', t === 'bus');
+  document.getElementById('tab-cam').classList.toggle('on', t === 'cam');
+  document.getElementById('panel-bus').classList.toggle('on', t === 'bus');
+  document.getElementById('panel-cam').classList.toggle('on', t === 'cam');
+  if (t === 'cam') renderCam();
+}
+
+// ── ADD PERSON ──
+function addPerson() {
+  const n = document.getElementById('inp-nome').value.trim();
+  if (!n) { document.getElementById('inp-nome').focus(); return; }
+  const l = document.getElementById('inp-loc').value.trim();
+  P.push({ id: nid++, name: n, loc: l, paid: false });
+  document.getElementById('inp-nome').value = '';
+  document.getElementById('inp-loc').value = '';
+  document.getElementById('inp-nome').focus();
+  renderBus();
+  renderCam();
+}
+
+// ── TOGGLE PAID ──
+function togglePaid(id) {
+  const p = P.find(x => x.id === id);
+  if (p) { p.paid = !p.paid; renderBus(); }
+}
+
+// ── DELETE PERSON ──
+function delPerson(id) {
+  P = P.filter(x => x.id !== id);
+  R.forEach(r => { r.guests = r.guests.filter(g => g !== id); });
+  renderBus();
+  renderCam();
+}
+
+// ── SAVE EDIT ──
+function saveEdit(id, name, loc) {
+  const n = name.trim();
+  if (!n) return;
+  const p = P.find(x => x.id === id);
+  if (p) { p.name = n; p.loc = loc.trim(); }
+  renderBus();
+  renderCam();
+}
+
+// ── RENDER BUS ──
+function renderBus() {
+  const el = document.getElementById('plist');
+  el.innerHTML = '';
+
+  if (!P.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">👥</div>Nessun partecipante ancora.</div>';
+    updCounters(); return;
+  }
+
+  P.forEach((p, i) => {
+    // wrapper
+    const item = document.createElement('div');
+    item.className = 'pitem' + (p.paid ? ' paid' : '');
+
+    // number
+    const num = document.createElement('span');
+    num.className = 'pnum';
+    num.textContent = i + 1;
+
+    // paid toggle
+    const tog = document.createElement('button');
+    tog.className = 'ptog' + (p.paid ? ' on' : '');
+    tog.type = 'button';
+    tog.textContent = '✓';
+    tog.onclick = () => togglePaid(p.id);
+
+    // info block (normal view)
+    const info = document.createElement('div');
+    info.className = 'pinfo';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'pname';
+    nameEl.textContent = p.name;
+    info.appendChild(nameEl);
+    if (p.loc) {
+      const locEl = document.createElement('div');
+      locEl.className = 'ploc';
+      locEl.textContent = '📍 ' + p.loc;
+      info.appendChild(locEl);
+    }
+
+    // paid badge
+    const badge = document.createElement('span');
+    badge.className = 'pbadge';
+    badge.textContent = '✓ Pagato';
+
+    // actions
+    const acts = document.createElement('div');
+    acts.className = 'pacts';
+
+    // edit button
+    const editBtn = document.createElement('button');
+    editBtn.className = 'abtn';
+    editBtn.type = 'button';
+    editBtn.textContent = '✏️';
+    editBtn.onclick = () => {
+      // switch to edit mode
+      // replace info with inputs
+      const nameInp = document.createElement('input');
+      nameInp.className = 'einp';
+      nameInp.type = 'text';
+      nameInp.value = p.name;
+      nameInp.placeholder = 'Nome';
+
+      const locInp = document.createElement('input');
+      locInp.className = 'einp sm';
+      locInp.type = 'text';
+      locInp.value = p.loc || '';
+      locInp.placeholder = '📍 Località';
+
+      const editInfo = document.createElement('div');
+      editInfo.className = 'pinfo';
+      editInfo.appendChild(nameInp);
+      editInfo.appendChild(locInp);
+
+      item.replaceChild(editInfo, info);
+      badge.style.display = 'none';
+
+      // replace actions with just Save button
+      acts.innerHTML = '';
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'abtn blue';
+      saveBtn.type = 'button';
+      saveBtn.textContent = 'Salva';
+      saveBtn.onclick = () => saveEdit(p.id, nameInp.value, locInp.value);
+      acts.appendChild(saveBtn);
+
+      nameInp.focus();
+      nameInp.select();
+
+      nameInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(p.id, nameInp.value, locInp.value); } if (e.key === 'Escape') renderBus(); };
+      locInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(p.id, nameInp.value, locInp.value); } if (e.key === 'Escape') renderBus(); };
+    };
+
+    // delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'abtn red';
+    delBtn.type = 'button';
+    delBtn.textContent = '✕';
+    delBtn.onclick = () => delPerson(p.id);
+
+    acts.appendChild(editBtn);
+    acts.appendChild(delBtn);
+
+    item.appendChild(num);
+    item.appendChild(tog);
+    item.appendChild(info);
+    item.appendChild(badge);
+    item.appendChild(acts);
+    el.appendChild(item);
+  });
+
+  updCounters();
+}
+
+// ── ROOMS ──
+function openModal() {
+  document.getElementById('rbeds').value = '';
+  document.getElementById('rmod').classList.add('on');
+  setTimeout(() => document.getElementById('rbeds').focus(), 150);
+}
+function closeModal() { document.getElementById('rmod').classList.remove('on'); }
+document.getElementById('rmod').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+function createRoom() {
+  const b = parseInt(document.getElementById('rbeds').value);
+  if (!b || b < 1) return;
+  R.push({ id: nid++, name: 'Camera ' + (R.length + 1), beds: b, guests: [] });
+  closeModal();
+  renderCam();
+}
+
+function delRoom(id) { R = R.filter(r => r.id !== id); renderCam(); }
+function delGuest(rid, pid) { const r = R.find(x => x.id === rid); if (r) r.guests = r.guests.filter(g => g !== pid); renderCam(); }
+function renameRoom(id, v) { const r = R.find(x => x.id === id); if (r && v.trim()) r.name = v.trim(); }
+
+function renderCam() {
+  // unassigned
+  const asgn = new Set(R.flatMap(r => r.guests));
+  const ulist = P.filter(p => !asgn.has(p.id));
+  document.getElementById('ucnt').textContent = ulist.length;
+  const uEl = document.getElementById('ulist');
+  if (!ulist.length) { uEl.innerHTML = '<span class="etxt">Tutti assegnati 🎉</span>'; }
+  else { uEl.innerHTML = '<div class="chips">' + ulist.map(p => `<span class="chip">${p.name}</span>`).join('') + '</div>'; }
+
+  // rooms
+  const rEl = document.getElementById('rlist');
+  rEl.innerHTML = '';
+  if (!R.length) {
+    rEl.innerHTML = '<div class="empty"><div class="ei">🛏</div>Nessuna camera. Creane una!</div>';
+    updCounters(); return;
+  }
+
+  R.forEach(r => {
+    const occ = r.guests.length, full = occ >= r.beds;
+    const card = document.createElement('div');
+    card.className = 'rcard';
+
+    // head
+    const head = document.createElement('div');
+    head.className = 'rhead';
+    const ni = document.createElement('input');
+    ni.className = 'rninp'; ni.value = r.name; ni.type = 'text';
+    ni.onchange = () => renameRoom(r.id, ni.value);
+    const cap = document.createElement('span');
+    cap.className = 'rcap' + (full ? ' full' : '');
+    cap.textContent = occ + '/' + r.beds;
+    const db = document.createElement('button');
+    db.className = 'delbtn'; db.type = 'button'; db.textContent = '🗑';
+    db.onclick = () => delRoom(r.id);
+    head.appendChild(ni); head.appendChild(cap); head.appendChild(db);
+
+    // body
+    const body = document.createElement('div');
+    body.className = 'rbody';
+
+    const guests = document.createElement('div');
+    guests.className = 'rguests';
+    if (!r.guests.length) {
+      const em = document.createElement('span');
+      em.className = 'etxt'; em.style.fontSize = '.78rem'; em.textContent = 'Nessuno';
+      guests.appendChild(em);
+    } else {
+      r.guests.forEach(gid => {
+        const per = P.find(x => x.id === gid);
+        if (!per) return;
+        const gi = document.createElement('div');
+        gi.className = 'rgitem';
+        const gn = document.createElement('span');
+        gn.textContent = per.name;
+        const gd = document.createElement('button');
+        gd.className = 'rgdel'; gd.type = 'button'; gd.textContent = '✕';
+        gd.onclick = () => delGuest(r.id, gid);
+        gi.appendChild(gn); gi.appendChild(gd);
+        guests.appendChild(gi);
+      });
+    }
+    body.appendChild(guests);
+
+    if (!full) {
+      const wrap = document.createElement('div');
+      wrap.className = 'rawrap';
+      const ainp = document.createElement('input');
+      ainp.className = 'rainp'; ainp.type = 'text';
+      ainp.placeholder = 'Aggiungi persona...';
+      ainp.autocomplete = 'off';
+      const drop = document.createElement('div');
+      drop.className = 'acdrop';
+
+      const showDrop = () => {
+        const q = ainp.value.toLowerCase();
+        const free = P.filter(p => !asgn.has(p.id) && p.name.toLowerCase().includes(q));
+        drop.innerHTML = '';
+        if (!free.length) { drop.classList.remove('on'); return; }
+        free.forEach(p => {
+          const opt = document.createElement('div');
+          opt.className = 'acopt';
+          opt.textContent = p.name;
+          opt.onmousedown = e => { e.preventDefault(); assignGuest(r.id, p.id); ainp.value = ''; drop.classList.remove('on'); };
+          drop.appendChild(opt);
+        });
+        // position fixed relative to input
+        const rect = ainp.getBoundingClientRect();
+        drop.style.top = (rect.bottom + 4) + 'px';
+        drop.style.left = rect.left + 'px';
+        drop.style.width = rect.width + 'px';
+        drop.classList.add('on');
+      };
+
+      ainp.oninput = showDrop;
+      ainp.onfocus = showDrop;
+      ainp.onkeydown = e => {
+        if (e.key === 'Escape') { drop.classList.remove('on'); }
+        if (e.key === 'Enter') {
+          const first = drop.querySelector('.acopt');
+          if (first) first.onmousedown(e);
+        }
+      };
+
+      wrap.appendChild(ainp);
+      document.body.appendChild(drop);
+      body.appendChild(wrap);
+    } else {
+      const fm = document.createElement('div');
+      fm.className = 'rfull'; fm.textContent = '✓ Camera piena';
+      body.appendChild(fm);
+    }
+
+    card.appendChild(head);
+    card.appendChild(body);
+    rEl.appendChild(card);
+  });
+
+  updCounters();
+}
+
+function assignGuest(rid, pid) {
+  const r = R.find(x => x.id === rid);
+  if (!r || r.guests.length >= r.beds || r.guests.includes(pid)) return;
+  r.guests.push(pid);
+  renderCam();
+}
+
+document.addEventListener('click', e => {
+  document.querySelectorAll('.acdrop.on').forEach(d => {
+    if (!d.parentElement.contains(e.target)) d.classList.remove('on');
+  });
+});
+
+// ── COUNTERS ──
+function updCounters() {
+  const tot = P.length, paid = P.filter(p => p.paid).length;
+  const asgn = new Set(R.flatMap(r => r.guests));
+  const unass = P.filter(p => !asgn.has(p.id)).length;
+  document.getElementById('cbus').textContent = Math.max(0, 60 - tot);
+  document.getElementById('chtl').textContent = unass;
+  document.getElementById('pinfo').textContent = paid + ' pagati · ' + tot + ' iscritti';
+  const totalMoney = paid * price;
+  document.getElementById('cmoney').textContent = '€ ' + totalMoney.toLocaleString('it-IT', {minimumFractionDigits: totalMoney % 1 !== 0 ? 2 : 0, maximumFractionDigits: 2});
+}
+
+function setPrice(v) {
+  price = parseFloat(v) || 0;
+  localStorage.setItem('t_price', price);
+  updCounters();
+}
+
+// ── STORAGE ──
+function saveLocal() {
+  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid, price })); showToast('💾 Salvato!'); }
+  catch(e) { showToast('❌ Errore'); }
+}
+function exportJSON() {
+  dl(JSON.stringify({ P, R, nid, price }, null, 2), 'teramo_' + ts() + '.json', 'application/json');
+  showToast('⬇ JSON scaricato!');
+}
+function importJSON(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    try {
+      const s = JSON.parse(ev.target.result);
+      if (!Array.isArray(s.P) || !Array.isArray(s.R)) throw 0;
+      P = s.P; R = s.R; nid = s.nid || 99; price = s.price || 0;
+      document.getElementById('price-inp').value = price || '';
+      renderBus(); renderCam(); showToast('⬆ Importato!');
+    } catch { showToast('❌ File non valido'); }
+  };
+  rd.readAsText(f); e.target.value = '';
+}
+function exportLista() {
+  if (!P.length) { showToast('⚠️ Nessun partecipante'); return; }
+  const lines = ['🚌 LISTA BUS — VIAGGIO A TERAMO', '10 → 11 Ottobre', '─'.repeat(32), ''];
+  P.forEach((p, i) => {
+    lines.push(String(i + 1).padStart(2, '0') + '. ' + p.name + (p.loc ? ' — ' + p.loc : '') + (p.paid ? ' ✓' : ''));
+  });
+  const paidCount = P.filter(x => x.paid).length;
+  lines.push('', '─'.repeat(32), 'Totale: ' + P.length + ' · Pagati: ' + paidCount);
+  if (price > 0) lines.push('Incassato: € ' + (paidCount * price).toLocaleString('it-IT'));
+  dl(lines.join('\n'), 'lista_bus_teramo.txt', 'text/plain;charset=utf-8');
+  showToast('📋 Lista esportata!');
+}
+function dl(content, name, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name; a.click();
+}
+function ts() { return new Date().toISOString().slice(0, 16).replace(/[T:]/g, '_'); }
+
+// ── TOAST ──
+let tt;
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('on');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+// ── INIT ──
+try {
+  const sv = localStorage.getItem(SK);
+  if (sv) { const s = JSON.parse(sv); P = s.P || []; R = s.R || []; nid = s.nid || 1; price = s.price || 0; }
+  if (!price) { const sp = localStorage.getItem('t_price'); if (sp) price = parseFloat(sp) || 0; }
+  document.getElementById('price-inp').value = price || '';
+} catch(e) {}
+renderBus();
+renderCam();
+
+// ── PWA: register service worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

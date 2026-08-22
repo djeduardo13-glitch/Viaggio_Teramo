@@ -1,0 +1,12 @@
+{
+  "name": "Viaggio a Teramo",
+  "short_name": "Teramo",
+  "description": "Organizzazione viaggio bus e camere — 10-11 Ottobre",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f4f0",
+  "theme_color": "#2563eb",
+  "lang": "it"
+}
