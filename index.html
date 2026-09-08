@@ -30,14 +30,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .cv{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1.1}
 .cc.bus .cv{color:var(--ac)}
 .cc.htl .cv{color:var(--gr)}
-.money-card{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.money-left{display:flex;align-items:center;gap:10px}
+.money-card{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:10px}
 .money-info{display:flex;flex-direction:column}
 .money-val{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--am);line-height:1.1}
-.price-set{display:flex;align-items:center;gap:5px}
-.price-set span{font-size:.68rem;color:var(--tx2);font-weight:600}
-.price-inp{width:64px;background:var(--sur);border:1.5px solid var(--brd);border-radius:6px;padding:5px 7px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;text-align:right}
-.price-inp:focus{border-color:var(--am)}
+
+/* search & sort */
+.search-row{display:flex;gap:8px;margin-bottom:10px}
+.search-inp{flex:1;background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--rs);padding:10px 13px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.87rem;outline:none;min-width:0}
+.search-inp:focus{border-color:var(--ac)}
+.search-inp::placeholder{color:var(--tx2)}
+.sort-row{display:flex;gap:6px;margin-bottom:12px}
+.sort-btn{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:600;padding:7px 12px;border-radius:20px;border:1.5px solid var(--brd);background:var(--sur);color:var(--tx2);cursor:pointer;white-space:nowrap;flex:1;text-align:center}
+.sort-btn.on{border-color:var(--ac);color:var(--ac);background:var(--acbg)}
 
 /* toolbar */
 .toolbar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--brd);overflow-x:auto}
@@ -161,16 +165,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
     <div class="cc htl"><span class="ci">🏨</span><div><div class="cl">Senza camera</div><div class="cv" id="chtl">0</div></div></div>
   </div>
   <div class="money-card">
-    <div class="money-left">
-      <span class="ci">💶</span>
-      <div class="money-info">
-        <div class="cl">Incassato</div>
-        <div class="money-val" id="cmoney">€ 0</div>
-      </div>
-    </div>
-    <div class="price-set">
-      <span>€/persona</span>
-      <input type="number" class="price-inp" id="price-inp" min="0" step="0.5" placeholder="0" oninput="setPrice(this.value)">
+    <span class="ci">💶</span>
+    <div class="money-info">
+      <div class="cl">Incassato (€75/persona)</div>
+      <div class="money-val" id="cmoney">€ 0</div>
     </div>
   </div>
 </header>
@@ -202,6 +200,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
     <div class="add-row">
       <input class="finp sm" id="inp-loc" type="text" placeholder="📍 Località (opzionale)" onkeydown="if(event.key==='Enter')addPerson()">
     </div>
+  </div>
+  <div class="search-row">
+    <input class="search-inp" id="search-inp" type="text" placeholder="🔎 Cerca per nome..." oninput="renderBus()">
+  </div>
+  <div class="sort-row">
+    <button class="sort-btn" id="sort-name" onclick="setSort('name')">Nome A-Z</button>
+    <button class="sort-btn" id="sort-loc" onclick="setSort('loc')">Località A-Z</button>
   </div>
   <div id="plist"></div>
 </div>
@@ -237,7 +242,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 
 <script>
 // ── STATE ──
-let P = [], R = [], nid = 1, price = 0;
+let P = [], R = [], nid = 1;
+const PRICE = 75;
+let sortMode = 'none'; // 'none' | 'name' | 'loc'
 const SK = 'teramo_v3';
 
 // ── THEME ──
@@ -300,16 +307,38 @@ function saveEdit(id, name, loc) {
 }
 
 // ── RENDER BUS ──
+function getDisplayList() {
+  const q = (document.getElementById('search-inp')?.value || '').trim().toLowerCase();
+  let list = P.slice();
+  if (q) list = list.filter(p => p.name.toLowerCase().includes(q));
+  if (sortMode === 'name') list.sort((a, b) => a.name.localeCompare(b.name, 'it', {sensitivity: 'base'}));
+  else if (sortMode === 'loc') list.sort((a, b) => (a.loc||'').localeCompare(b.loc||'', 'it', {sensitivity: 'base'}) || a.name.localeCompare(b.name,'it'));
+  return list;
+}
+
+function setSort(mode) {
+  sortMode = (sortMode === mode) ? 'none' : mode;
+  document.getElementById('sort-name').classList.toggle('on', sortMode === 'name');
+  document.getElementById('sort-loc').classList.toggle('on', sortMode === 'loc');
+  renderBus();
+}
+
 function renderBus() {
   const el = document.getElementById('plist');
   el.innerHTML = '';
+
+  const list = getDisplayList();
 
   if (!P.length) {
     el.innerHTML = '<div class="empty"><div class="ei">👥</div>Nessun partecipante ancora.</div>';
     updCounters(); return;
   }
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">🔎</div>Nessun risultato.</div>';
+    updCounters(); return;
+  }
 
-  P.forEach((p, i) => {
+  list.forEach((p, i) => {
     // wrapper
     const item = document.createElement('div');
     item.className = 'pitem' + (p.paid ? ' paid' : '');
@@ -576,23 +605,17 @@ function updCounters() {
   document.getElementById('cbus').textContent = Math.max(0, 60 - tot);
   document.getElementById('chtl').textContent = unass;
   document.getElementById('pinfo').textContent = paid + ' pagati · ' + tot + ' iscritti';
-  const totalMoney = paid * price;
-  document.getElementById('cmoney').textContent = '€ ' + totalMoney.toLocaleString('it-IT', {minimumFractionDigits: totalMoney % 1 !== 0 ? 2 : 0, maximumFractionDigits: 2});
-}
-
-function setPrice(v) {
-  price = parseFloat(v) || 0;
-  localStorage.setItem('t_price', price);
-  updCounters();
+  const totalMoney = paid * PRICE;
+  document.getElementById('cmoney').textContent = '€ ' + totalMoney.toLocaleString('it-IT');
 }
 
 // ── STORAGE ──
 function saveLocal() {
-  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid, price })); showToast('💾 Salvato!'); }
+  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid })); showToast('💾 Salvato!'); }
   catch(e) { showToast('❌ Errore'); }
 }
 function exportJSON() {
-  dl(JSON.stringify({ P, R, nid, price }, null, 2), 'teramo_' + ts() + '.json', 'application/json');
+  dl(JSON.stringify({ P, R, nid }, null, 2), 'teramo_' + ts() + '.json', 'application/json');
   showToast('⬇ JSON scaricato!');
 }
 function importJSON(e) {
@@ -602,8 +625,7 @@ function importJSON(e) {
     try {
       const s = JSON.parse(ev.target.result);
       if (!Array.isArray(s.P) || !Array.isArray(s.R)) throw 0;
-      P = s.P; R = s.R; nid = s.nid || 99; price = s.price || 0;
-      document.getElementById('price-inp').value = price || '';
+      P = s.P; R = s.R; nid = s.nid || 99;
       renderBus(); renderCam(); showToast('⬆ Importato!');
     } catch { showToast('❌ File non valido'); }
   };
@@ -617,7 +639,7 @@ function exportLista() {
   });
   const paidCount = P.filter(x => x.paid).length;
   lines.push('', '─'.repeat(32), 'Totale: ' + P.length + ' · Pagati: ' + paidCount);
-  if (price > 0) lines.push('Incassato: € ' + (paidCount * price).toLocaleString('it-IT'));
+  lines.push('Incassato: € ' + (paidCount * PRICE).toLocaleString('it-IT'));
   dl(lines.join('\n'), 'lista_bus_teramo.txt', 'text/plain;charset=utf-8');
   showToast('📋 Lista esportata!');
 }
@@ -639,9 +661,7 @@ function showToast(m) {
 // ── INIT ──
 try {
   const sv = localStorage.getItem(SK);
-  if (sv) { const s = JSON.parse(sv); P = s.P || []; R = s.R || []; nid = s.nid || 1; price = s.price || 0; }
-  if (!price) { const sp = localStorage.getItem('t_price'); if (sp) price = parseFloat(sp) || 0; }
-  document.getElementById('price-inp').value = price || '';
+  if (sv) { const s = JSON.parse(sv); P = s.P || []; R = s.R || []; nid = s.nid || 1; }
 } catch(e) {}
 renderBus();
 renderCam();
