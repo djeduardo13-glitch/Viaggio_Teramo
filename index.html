@@ -42,6 +42,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .sort-row{display:flex;gap:6px;margin-bottom:12px}
 .sort-btn{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:600;padding:7px 12px;border-radius:20px;border:1.5px solid var(--brd);background:var(--sur);color:var(--tx2);cursor:pointer;white-space:nowrap;flex:1;text-align:center}
 .sort-btn.on{border-color:var(--ac);color:var(--ac);background:var(--acbg)}
+.group-sep{display:flex;align-items:center;justify-content:space-between;padding:14px 4px 8px;margin-top:6px;border-top:1.5px dashed var(--brd)}
+.group-sep span:first-child{font-size:.72rem;font-weight:800;letter-spacing:.8px;color:var(--gr)}
+.group-count{font-family:'JetBrains Mono',monospace;font-size:.7rem;background:var(--grbg);color:var(--gr);padding:2px 8px;border-radius:20px}
 
 /* toolbar */
 .toolbar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--brd);overflow-x:auto}
@@ -323,6 +326,107 @@ function setSort(mode) {
   renderBus();
 }
 
+function makePersonItem(p, i) {
+  // wrapper
+  const item = document.createElement('div');
+  item.className = 'pitem' + (p.paid ? ' paid' : '');
+
+  // number
+  const num = document.createElement('span');
+  num.className = 'pnum';
+  num.textContent = i + 1;
+
+  // paid toggle
+  const tog = document.createElement('button');
+  tog.className = 'ptog' + (p.paid ? ' on' : '');
+  tog.type = 'button';
+  tog.textContent = '✓';
+  tog.onclick = () => togglePaid(p.id);
+
+  // info block (normal view)
+  const info = document.createElement('div');
+  info.className = 'pinfo';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'pname';
+  nameEl.textContent = p.name;
+  info.appendChild(nameEl);
+  if (p.loc) {
+    const locEl = document.createElement('div');
+    locEl.className = 'ploc';
+    locEl.textContent = '📍 ' + p.loc;
+    info.appendChild(locEl);
+  }
+
+  // paid badge
+  const badge = document.createElement('span');
+  badge.className = 'pbadge';
+  badge.textContent = '✓ Pagato';
+
+  // actions
+  const acts = document.createElement('div');
+  acts.className = 'pacts';
+
+  // edit button
+  const editBtn = document.createElement('button');
+  editBtn.className = 'abtn';
+  editBtn.type = 'button';
+  editBtn.textContent = '✏️';
+  editBtn.onclick = () => {
+    // switch to edit mode
+    const nameInp = document.createElement('input');
+    nameInp.className = 'einp';
+    nameInp.type = 'text';
+    nameInp.value = p.name;
+    nameInp.placeholder = 'Nome';
+
+    const locInp = document.createElement('input');
+    locInp.className = 'einp sm';
+    locInp.type = 'text';
+    locInp.value = p.loc || '';
+    locInp.placeholder = '📍 Località';
+
+    const editInfo = document.createElement('div');
+    editInfo.className = 'pinfo';
+    editInfo.appendChild(nameInp);
+    editInfo.appendChild(locInp);
+
+    item.replaceChild(editInfo, info);
+    badge.style.display = 'none';
+
+    // replace actions with just Save button
+    acts.innerHTML = '';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'abtn blue';
+    saveBtn.type = 'button';
+    saveBtn.textContent = 'Salva';
+    saveBtn.onclick = () => saveEdit(p.id, nameInp.value, locInp.value);
+    acts.appendChild(saveBtn);
+
+    nameInp.focus();
+    nameInp.select();
+
+    nameInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(p.id, nameInp.value, locInp.value); } if (e.key === 'Escape') renderBus(); };
+    locInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(p.id, nameInp.value, locInp.value); } if (e.key === 'Escape') renderBus(); };
+  };
+
+  // delete button
+  const delBtn = document.createElement('button');
+  delBtn.className = 'abtn red';
+  delBtn.type = 'button';
+  delBtn.textContent = '✕';
+  delBtn.onclick = () => delPerson(p.id);
+
+  acts.appendChild(editBtn);
+  acts.appendChild(delBtn);
+
+  item.appendChild(num);
+  item.appendChild(tog);
+  item.appendChild(info);
+  item.appendChild(badge);
+  item.appendChild(acts);
+  return item;
+}
+
 function renderBus() {
   const el = document.getElementById('plist');
   el.innerHTML = '';
@@ -338,107 +442,18 @@ function renderBus() {
     updCounters(); return;
   }
 
-  list.forEach((p, i) => {
-    // wrapper
-    const item = document.createElement('div');
-    item.className = 'pitem' + (p.paid ? ' paid' : '');
+  const unpaid = list.filter(p => !p.paid);
+  const paid = list.filter(p => p.paid);
 
-    // number
-    const num = document.createElement('span');
-    num.className = 'pnum';
-    num.textContent = i + 1;
+  unpaid.forEach((p, i) => el.appendChild(makePersonItem(p, i)));
 
-    // paid toggle
-    const tog = document.createElement('button');
-    tog.className = 'ptog' + (p.paid ? ' on' : '');
-    tog.type = 'button';
-    tog.textContent = '✓';
-    tog.onclick = () => togglePaid(p.id);
-
-    // info block (normal view)
-    const info = document.createElement('div');
-    info.className = 'pinfo';
-    const nameEl = document.createElement('div');
-    nameEl.className = 'pname';
-    nameEl.textContent = p.name;
-    info.appendChild(nameEl);
-    if (p.loc) {
-      const locEl = document.createElement('div');
-      locEl.className = 'ploc';
-      locEl.textContent = '📍 ' + p.loc;
-      info.appendChild(locEl);
-    }
-
-    // paid badge
-    const badge = document.createElement('span');
-    badge.className = 'pbadge';
-    badge.textContent = '✓ Pagato';
-
-    // actions
-    const acts = document.createElement('div');
-    acts.className = 'pacts';
-
-    // edit button
-    const editBtn = document.createElement('button');
-    editBtn.className = 'abtn';
-    editBtn.type = 'button';
-    editBtn.textContent = '✏️';
-    editBtn.onclick = () => {
-      // switch to edit mode
-      // replace info with inputs
-      const nameInp = document.createElement('input');
-      nameInp.className = 'einp';
-      nameInp.type = 'text';
-      nameInp.value = p.name;
-      nameInp.placeholder = 'Nome';
-
-      const locInp = document.createElement('input');
-      locInp.className = 'einp sm';
-      locInp.type = 'text';
-      locInp.value = p.loc || '';
-      locInp.placeholder = '📍 Località';
-
-      const editInfo = document.createElement('div');
-      editInfo.className = 'pinfo';
-      editInfo.appendChild(nameInp);
-      editInfo.appendChild(locInp);
-
-      item.replaceChild(editInfo, info);
-      badge.style.display = 'none';
-
-      // replace actions with just Save button
-      acts.innerHTML = '';
-      const saveBtn = document.createElement('button');
-      saveBtn.className = 'abtn blue';
-      saveBtn.type = 'button';
-      saveBtn.textContent = 'Salva';
-      saveBtn.onclick = () => saveEdit(p.id, nameInp.value, locInp.value);
-      acts.appendChild(saveBtn);
-
-      nameInp.focus();
-      nameInp.select();
-
-      nameInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(p.id, nameInp.value, locInp.value); } if (e.key === 'Escape') renderBus(); };
-      locInp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); saveEdit(p.id, nameInp.value, locInp.value); } if (e.key === 'Escape') renderBus(); };
-    };
-
-    // delete button
-    const delBtn = document.createElement('button');
-    delBtn.className = 'abtn red';
-    delBtn.type = 'button';
-    delBtn.textContent = '✕';
-    delBtn.onclick = () => delPerson(p.id);
-
-    acts.appendChild(editBtn);
-    acts.appendChild(delBtn);
-
-    item.appendChild(num);
-    item.appendChild(tog);
-    item.appendChild(info);
-    item.appendChild(badge);
-    item.appendChild(acts);
-    el.appendChild(item);
-  });
+  if (paid.length) {
+    const sep = document.createElement('div');
+    sep.className = 'group-sep';
+    sep.innerHTML = '<span>✓ PAGATI</span><span class="group-count">' + paid.length + '</span>';
+    el.appendChild(sep);
+    paid.forEach((p, i) => el.appendChild(makePersonItem(p, i)));
+  }
 
   updCounters();
 }
