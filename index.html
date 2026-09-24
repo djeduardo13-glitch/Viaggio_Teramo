@@ -30,9 +30,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .cv{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1.1}
 .cc.bus .cv{color:var(--ac)}
 .cc.htl .cv{color:var(--gr)}
-.money-card{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:10px}
+.money-card{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer}
 .money-info{display:flex;flex-direction:column}
-.money-val{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--am);line-height:1.1}
+.money-val{font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--am);line-height:1.1}
+.money-net{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:700}
+.money-net.pos{color:var(--gr)}
+.money-net.neg{color:var(--rd)}
 
 /* search & sort */
 .search-row{display:flex;gap:8px;margin-bottom:10px}
@@ -46,6 +49,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .group-sep span:first-child{font-size:.72rem;font-weight:800;letter-spacing:.8px;color:var(--gr)}
 .group-count{font-family:'JetBrains Mono',monospace;font-size:.7rem;background:var(--grbg);color:var(--gr);padding:2px 8px;border-radius:20px}
 
+/* budget */
+.bud-summary{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.bud-row{display:flex;align-items:center;justify-content:space-between;background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh)}
+.bud-row .bl{display:flex;align-items:center;gap:9px;font-size:.87rem;font-weight:600;color:var(--tx2)}
+.bud-row .bv{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:800}
+.bud-row.in .bv{color:var(--gr)}
+.bud-row.out .bv{color:var(--rd)}
+.bud-row.net{background:var(--acbg);border-color:var(--ac)}
+.bud-row.net .bl{color:var(--ac);font-weight:700}
+.bud-row.net .bv{font-size:1.35rem}
+.bud-row.net .bv.neg{color:var(--rd)}
+.bud-row.net .bv.pos{color:var(--ac)}
+.elist{display:flex;flex-direction:column;gap:6px}
+.eitem{display:flex;align-items:center;gap:10px;background:var(--sur);border:1.5px solid var(--brd);border-radius:var(--r);padding:11px 12px;box-shadow:var(--sh)}
+.einfo{flex:1;min-width:0}
+.edesc{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edate{font-size:.68rem;color:var(--tx2);margin-top:1px}
+.eamt{font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;color:var(--rd);flex-shrink:0}
+
 /* toolbar */
 .toolbar{display:flex;gap:6px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--brd);overflow-x:auto}
 .toolbar::-webkit-scrollbar{display:none}
@@ -55,8 +77,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .tbtn.am{border-color:var(--am);color:var(--am)}
 
 /* tabs */
-.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--sur);border-bottom:2px solid var(--brd)}
-.tab{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;padding:13px 8px;border:none;background:none;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--sur);border-bottom:2px solid var(--brd)}
+.tab{font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;padding:13px 4px;border:none;background:none;color:var(--tx2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
 .tab.on{color:var(--ac);border-bottom-color:var(--ac)}
 
 /* panels */
@@ -167,11 +189,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
     <div class="cc bus"><span class="ci">🚌</span><div><div class="cl">Posti rimasti</div><div class="cv" id="cbus">60</div></div></div>
     <div class="cc htl"><span class="ci">🏨</span><div><div class="cl">Senza camera</div><div class="cv" id="chtl">0</div></div></div>
   </div>
-  <div class="money-card">
-    <span class="ci">💶</span>
+  <div class="money-card" onclick="goTab('bud')">
     <div class="money-info">
-      <div class="cl">Incassato (€75/persona)</div>
+      <div class="cl">Incassato</div>
       <div class="money-val" id="cmoney">€ 0</div>
+    </div>
+    <div class="money-info" style="align-items:flex-end">
+      <div class="cl">Totale ad oggi</div>
+      <div class="money-net" id="cnet">€ 0</div>
     </div>
   </div>
 </header>
@@ -187,6 +212,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 <div class="tabs">
   <button class="tab on" id="tab-bus" onclick="goTab('bus')">🚌 Bus</button>
   <button class="tab" id="tab-cam" onclick="goTab('cam')">🏨 Camere</button>
+  <button class="tab" id="tab-bud" onclick="goTab('bud')">💶 Bilancio</button>
 </div>
 
 <!-- BUS -->
@@ -227,6 +253,38 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
   <div id="rlist"></div>
 </div>
 
+<!-- BILANCIO -->
+<div class="panel" id="panel-bud">
+  <div class="bud-summary">
+    <div class="bud-row in">
+      <span class="bl">💶 Totale ricevuto</span>
+      <span class="bv" id="bud-in">€ 0</span>
+    </div>
+    <div class="bud-row out">
+      <span class="bl">🧾 Spese totali</span>
+      <span class="bv" id="bud-out">€ 0</span>
+    </div>
+    <div class="bud-row net">
+      <span class="bl">📊 Totale ad oggi</span>
+      <span class="bv" id="bud-net">€ 0</span>
+    </div>
+  </div>
+
+  <div class="sec-hdr">
+    <span class="sec-lbl">Spese</span>
+  </div>
+  <div class="add-form">
+    <div class="add-row">
+      <input class="finp" id="inp-espdesc" type="text" placeholder="Descrizione spesa..." onkeydown="if(event.key==='Enter')document.getElementById('inp-espamt').focus()">
+    </div>
+    <div class="add-row">
+      <input class="finp sm" id="inp-espamt" type="number" min="0" step="0.01" placeholder="€ Importo" onkeydown="if(event.key==='Enter')addExpense()">
+      <button class="btn-add" onclick="addExpense()">+ Aggiungi</button>
+    </div>
+  </div>
+  <div class="elist" id="elist"></div>
+</div>
+
 <!-- MODAL -->
 <div class="mov" id="rmod">
   <div class="modal">
@@ -245,7 +303,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 
 <script>
 // ── STATE ──
-let P = [], R = [], nid = 1;
+let P = [], R = [], nid = 1, E = [];
 const PRICE = 75;
 let sortMode = 'none'; // 'none' | 'name' | 'loc'
 const SK = 'teramo_v3';
@@ -267,9 +325,12 @@ if (localStorage.getItem('t_theme') === '1') {
 function goTab(t) {
   document.getElementById('tab-bus').classList.toggle('on', t === 'bus');
   document.getElementById('tab-cam').classList.toggle('on', t === 'cam');
+  document.getElementById('tab-bud').classList.toggle('on', t === 'bud');
   document.getElementById('panel-bus').classList.toggle('on', t === 'bus');
   document.getElementById('panel-cam').classList.toggle('on', t === 'cam');
+  document.getElementById('panel-bud').classList.toggle('on', t === 'bud');
   if (t === 'cam') renderCam();
+  if (t === 'bud') renderBudget();
 }
 
 // ── ADD PERSON ──
@@ -620,17 +681,78 @@ function updCounters() {
   document.getElementById('cbus').textContent = Math.max(0, 60 - tot);
   document.getElementById('chtl').textContent = unass;
   document.getElementById('pinfo').textContent = paid + ' pagati · ' + tot + ' iscritti';
-  const totalMoney = paid * PRICE;
-  document.getElementById('cmoney').textContent = '€ ' + totalMoney.toLocaleString('it-IT');
+  const totalIn = paid * PRICE;
+  const totalOut = E.reduce((s, e) => s + e.amount, 0);
+  const net = totalIn - totalOut;
+  document.getElementById('cmoney').textContent = '€ ' + totalIn.toLocaleString('it-IT');
+  const netEl = document.getElementById('cnet');
+  netEl.textContent = '€ ' + net.toLocaleString('it-IT');
+  netEl.className = 'money-net ' + (net < 0 ? 'neg' : 'pos');
+}
+
+// ── EXPENSES / BILANCIO ──
+function addExpense() {
+  const d = document.getElementById('inp-espdesc').value.trim();
+  const a = parseFloat(document.getElementById('inp-espamt').value);
+  if (!d || !a || a <= 0) return;
+  E.push({ id: nid++, desc: d, amount: a, date: new Date().toLocaleDateString('it-IT') });
+  document.getElementById('inp-espdesc').value = '';
+  document.getElementById('inp-espamt').value = '';
+  document.getElementById('inp-espdesc').focus();
+  renderBudget();
+  updCounters();
+}
+function delExpense(id) {
+  E = E.filter(x => x.id !== id);
+  renderBudget();
+  updCounters();
+}
+function renderBudget() {
+  const paid = P.filter(p => p.paid).length;
+  const totalIn = paid * PRICE;
+  const totalOut = E.reduce((s, e) => s + e.amount, 0);
+  const net = totalIn - totalOut;
+  document.getElementById('bud-in').textContent = '€ ' + totalIn.toLocaleString('it-IT');
+  document.getElementById('bud-out').textContent = '€ ' + totalOut.toLocaleString('it-IT');
+  const netEl = document.getElementById('bud-net');
+  netEl.textContent = '€ ' + net.toLocaleString('it-IT');
+  netEl.className = 'bv ' + (net < 0 ? 'neg' : 'pos');
+
+  const el = document.getElementById('elist');
+  el.innerHTML = '';
+  if (!E.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">🧾</div>Nessuna spesa registrata.</div>';
+    return;
+  }
+  E.slice().reverse().forEach(ex => {
+    const item = document.createElement('div');
+    item.className = 'eitem';
+    const info = document.createElement('div');
+    info.className = 'einfo';
+    const d = document.createElement('div');
+    d.className = 'edesc'; d.textContent = ex.desc;
+    const dt = document.createElement('div');
+    dt.className = 'edate'; dt.textContent = ex.date || '';
+    info.appendChild(d); info.appendChild(dt);
+    const amt = document.createElement('span');
+    amt.className = 'eamt'; amt.textContent = '- € ' + ex.amount.toLocaleString('it-IT');
+    const delBtn = document.createElement('button');
+    delBtn.className = 'abtn red'; delBtn.type = 'button'; delBtn.textContent = '✕';
+    delBtn.onclick = () => delExpense(ex.id);
+    item.appendChild(info);
+    item.appendChild(amt);
+    item.appendChild(delBtn);
+    el.appendChild(item);
+  });
 }
 
 // ── STORAGE ──
 function saveLocal() {
-  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid })); showToast('💾 Salvato!'); }
+  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid, E })); showToast('💾 Salvato!'); }
   catch(e) { showToast('❌ Errore'); }
 }
 function exportJSON() {
-  dl(JSON.stringify({ P, R, nid }, null, 2), 'teramo_' + ts() + '.json', 'application/json');
+  dl(JSON.stringify({ P, R, nid, E }, null, 2), 'teramo_' + ts() + '.json', 'application/json');
   showToast('⬇ JSON scaricato!');
 }
 function importJSON(e) {
@@ -640,8 +762,8 @@ function importJSON(e) {
     try {
       const s = JSON.parse(ev.target.result);
       if (!Array.isArray(s.P) || !Array.isArray(s.R)) throw 0;
-      P = s.P; R = s.R; nid = s.nid || 99;
-      renderBus(); renderCam(); showToast('⬆ Importato!');
+      P = s.P; R = s.R; nid = s.nid || 99; E = Array.isArray(s.E) ? s.E : [];
+      renderBus(); renderCam(); renderBudget(); showToast('⬆ Importato!');
     } catch { showToast('❌ File non valido'); }
   };
   rd.readAsText(f); e.target.value = '';
@@ -653,8 +775,12 @@ function exportLista() {
     lines.push(String(i + 1).padStart(2, '0') + '. ' + p.name + (p.loc ? ' — ' + p.loc : '') + (p.paid ? ' ✓' : ''));
   });
   const paidCount = P.filter(x => x.paid).length;
+  const totalIn = paidCount * PRICE;
+  const totalOut = E.reduce((s, e) => s + e.amount, 0);
   lines.push('', '─'.repeat(32), 'Totale: ' + P.length + ' · Pagati: ' + paidCount);
-  lines.push('Incassato: € ' + (paidCount * PRICE).toLocaleString('it-IT'));
+  lines.push('Incassato: € ' + totalIn.toLocaleString('it-IT'));
+  lines.push('Spese: € ' + totalOut.toLocaleString('it-IT'));
+  lines.push('Totale ad oggi: € ' + (totalIn - totalOut).toLocaleString('it-IT'));
   dl(lines.join('\n'), 'lista_bus_teramo.txt', 'text/plain;charset=utf-8');
   showToast('📋 Lista esportata!');
 }
@@ -676,10 +802,11 @@ function showToast(m) {
 // ── INIT ──
 try {
   const sv = localStorage.getItem(SK);
-  if (sv) { const s = JSON.parse(sv); P = s.P || []; R = s.R || []; nid = s.nid || 1; }
+  if (sv) { const s = JSON.parse(sv); P = s.P || []; R = s.R || []; nid = s.nid || 1; E = Array.isArray(s.E) ? s.E : []; }
 } catch(e) {}
 renderBus();
 renderCam();
+renderBudget();
 
 // ── PWA: register service worker ──
 if ('serviceWorker' in navigator) {
