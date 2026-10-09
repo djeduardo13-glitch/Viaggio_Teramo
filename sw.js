@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teramo-v1';
+const CACHE_NAME = 'teramo-v2';
 const ASSETS = [
   './index.html',
   './manifest.json'

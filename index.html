@@ -166,6 +166,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
 .mcan{background:var(--bg2);color:var(--tx2);border:1.5px solid var(--brd) !important}
 .mok{background:var(--ac);color:#fff}
 
+#watxt{width:100%;height:50vh;background:var(--bg);border:1.5px solid var(--brd);border-radius:9px;padding:12px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.85rem;line-height:1.45;resize:none;outline:none}
+.mok.wa{background:#25d366}
+
 /* toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--tx);color:var(--bg);border-radius:20px;padding:10px 20px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -206,6 +209,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
   <button class="tbtn gr" onclick="exportJSON()">⬇ Esporta JSON</button>
   <button class="tbtn am" onclick="document.getElementById('impf').click()">⬆ Importa JSON</button>
   <button class="tbtn am" onclick="exportLista()">📋 Lista bus</button>
+  <button class="tbtn gr" onclick="openWa()">💬 Camere WhatsApp</button>
+  <button class="tbtn" onclick="resetSeed()">↺ Dati iniziali</button>
   <input type="file" id="impf" accept=".json" style="display:none" onchange="importJSON(event)">
 </div>
 
@@ -299,14 +304,127 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-hei
   </div>
 </div>
 
+<!-- MODAL WHATSAPP -->
+<div class="mov" id="wamod">
+  <div class="modal">
+    <div class="mh"></div>
+    <h2>💬 Camere — messaggio WhatsApp</h2>
+    <textarea id="watxt" readonly></textarea>
+    <div class="macts">
+      <button class="mcan" onclick="closeWa()">Chiudi</button>
+      <button class="mok" onclick="copyWa()">📋 Copia</button>
+      <button class="mok wa" onclick="sendWa()">Invia</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+// ── DATI INIZIALI ──
+// Caricati automaticamente al primo avvio (nessun JSON da importare).
+// Si possono modificare qui o direttamente dall'app.
+const SEED = {
+ P: [
+  {"id": 2, "name": "Eduardo R.", "loc": "Parma", "paid": false},
+  {"id": 3, "name": "Caleb R.", "loc": "Parma", "paid": false},
+  {"id": 4, "name": "Natalia", "loc": "Parma", "paid": false},
+  {"id": 6, "name": "Sophia P.", "loc": "Parma", "paid": true},
+  {"id": 7, "name": "Milena R.", "loc": "Parma", "paid": true},
+  {"id": 8, "name": "Melissa R.", "loc": "Parma", "paid": true},
+  {"id": 9, "name": "Ana Laura C.", "loc": "Parma", "paid": false},
+  {"id": 10, "name": "Maria Julia C.", "loc": "Parma", "paid": false},
+  {"id": 11, "name": "Paula B.", "loc": "Parma", "paid": true},
+  {"id": 12, "name": "Luiz A.", "loc": "Parma", "paid": true},
+  {"id": 13, "name": "Isabela T.", "loc": "Parma", "paid": true},
+  {"id": 14, "name": "Giulia T.", "loc": "Parma", "paid": false},
+  {"id": 15, "name": "Pedro G.", "loc": "Parma", "paid": true},
+  {"id": 16, "name": "Felipe G.", "loc": "Parma", "paid": true},
+  {"id": 17, "name": "Joao Paulo C.", "loc": "Parma", "paid": true},
+  {"id": 18, "name": "Isabelli L.", "loc": "Parma", "paid": true},
+  {"id": 22, "name": "Lucas CJ", "loc": "Lodi", "paid": true},
+  {"id": 23, "name": "Anna Laura Amoroso", "loc": "Lodi", "paid": true},
+  {"id": 24, "name": "Helouise Bonano", "loc": "Codogno", "paid": true},
+  {"id": 25, "name": "Mariane Nagliatti", "loc": "Parma", "paid": true},
+  {"id": 26, "name": "Julia", "loc": "Lodi", "paid": true},
+  {"id": 29, "name": "Kaleb", "loc": "Busto Arsizio", "paid": true},
+  {"id": 30, "name": "Eliel Guedes CJ", "loc": "Bergamo", "paid": true},
+  {"id": 31, "name": "Talita Guedes", "loc": "Bergamo", "paid": true},
+  {"id": 32, "name": "Caio Guedes", "loc": "Bergamo", "paid": true},
+  {"id": 33, "name": "Yasmin Salvione", "loc": "Bergamo", "paid": true},
+  {"id": 35, "name": "Bruno Carano", "loc": "Bergamo", "paid": true},
+  {"id": 37, "name": "Levi", "loc": "Lodi", "paid": true},
+  {"id": 55, "name": "Ottavio Domingos Vieira", "loc": "Lodi", "paid": true},
+  {"id": 57, "name": "Angela Almeida", "loc": "Milano", "paid": true},
+  {"id": 62, "name": "Lidia Gemea", "loc": "Paula", "paid": true},
+  {"id": 63, "name": "Eliza gemea", "loc": "Parma", "paid": true},
+  {"id": 64, "name": "Pietro", "loc": "Codogno", "paid": true},
+  {"id": 65, "name": "Allard Raguel Caria de Paula", "loc": "Bergamo", "paid": true},
+  {"id": 67, "name": "Osmar Rodrigues Frois", "loc": "Bergamo", "paid": true},
+  {"id": 68, "name": "Thalita Juliane Caria Frois", "loc": "Bergamo", "paid": true},
+  {"id": 69, "name": "Maria de Mello Caria", "loc": "Bergamo", "paid": true},
+  {"id": 70, "name": "Nikole Gardina Campioni de Almeida", "loc": "Lodi", "paid": true},
+  {"id": 71, "name": "Emmanuel P.", "loc": "Parma", "paid": true},
+  {"id": 74, "name": "João Bacaro", "loc": "Bergamo", "paid": true},
+  {"id": 75, "name": "Jahel Oliveira", "loc": "", "paid": true},
+  {"id": 76, "name": "Nicol", "loc": "Inverigo", "paid": true},
+  {"id": 77, "name": "Raquel", "loc": "Inverigo", "paid": true},
+  {"id": 78, "name": "Kevin Manfrin", "loc": "Parma", "paid": true},
+  {"id": 79, "name": "Isabelle Manfrin", "loc": "Parma", "paid": true},
+  {"id": 80, "name": "Sara Alex", "loc": "Inverigo", "paid": true},
+  {"id": 81, "name": "Marcia", "loc": "Parma", "paid": true},
+  {"id": 82, "name": "Tatiane", "loc": "Parma", "paid": true},
+  {"id": 83, "name": "Davi", "loc": "Parma", "paid": false},
+  {"id": 84, "name": "Wesley", "loc": "Parma", "paid": false},
+  {"id": 85, "name": "Mirtes", "loc": "Parma", "paid": true},
+  {"id": 86, "name": "Carla", "loc": "Parma", "paid": true},
+  {"id": 87, "name": "Juan Miguel Silva", "loc": "Bergamo", "paid": true},
+  {"id": 88, "name": "Nathany Nadin", "loc": "Lodi", "paid": true},
+  {"id": 89, "name": "Alice Nadin", "loc": "Lodi", "paid": true},
+  {"id": 94, "name": "Vinicius", "loc": "Mantova", "paid": true},
+  {"id": 95, "name": "Guilherme Gomes", "loc": "Parma", "paid": true},
+  {"id": 96, "name": "Kevin", "loc": "Busto", "paid": true},
+  {"id": 97, "name": "Tica", "loc": "Parma", "paid": true},
+  {"id": 98, "name": "Maria da luz", "loc": "Bergamo", "paid": true}
+ ],
+ R: [
+  {"id": 39, "name": "Camera 2", "beds": 4, "guests": [8, 25, 9, 10]},
+  {"id": 40, "name": "Camera 3", "beds": 4, "guests": [17, 78, 16, 12]},
+  {"id": 41, "name": "Camera 4", "beds": 4, "guests": [15, 83, 71, 84]},
+  {"id": 46, "name": "Camera 9", "beds": 4, "guests": [65, 68, 69, 67]},
+  {"id": 52, "name": "Camera 15", "beds": 3, "guests": [2, 3, 4]},
+  {"id": 53, "name": "Camera 16", "beds": 2, "guests": [88, 89]},
+  {"id": 54, "name": "Camera 17", "beds": 2, "guests": [22, 23]},
+  {"id": 90, "name": "Camera 17", "beds": 3, "guests": [30, 31, 32]},
+  {"id": 99, "name": "Camera 19", "beds": 5, "guests": [13, 14, 18, 79, 77]},
+  {"id": 101, "name": "Camera 19", "beds": 2, "guests": [97, 98]},
+  {"id": 102, "name": "Camera 19", "beds": 2, "guests": [76, 80]},
+  {"id": 103, "name": "Camera 20", "beds": 5, "guests": [33, 57, 62, 63, 11]},
+  {"id": 104, "name": "Camera 17", "beds": 2, "guests": [7, 6]},
+  {"id": 107, "name": "Camera 18", "beds": 4, "guests": [24, 26, 70, 75]},
+  {"id": 108, "name": "Camera 18", "beds": 2, "guests": [86, 82]},
+  {"id": 109, "name": "Camera 19", "beds": 2, "guests": [85, 81]},
+  {"id": 110, "name": "Camera 19", "beds": 2, "guests": [35, 64]},
+  {"id": 111, "name": "Camera 20", "beds": 1, "guests": [95]},
+  {"id": 112, "name": "Camera 21", "beds": 3, "guests": [74, 94, 96]},
+  {"id": 113, "name": "Camera 21", "beds": 2, "guests": [29, 87]},
+  {"id": 114, "name": "Camera 21", "beds": 2, "guests": [37, 55]}
+ ],
+ E: [
+  {"id": 115, "desc": "Hotel", "amount": 975, "date": "02/10/2026"}
+ ],
+ nid: 116
+};
+function loadSeed() {
+  const s = JSON.parse(JSON.stringify(SEED));
+  P = s.P; R = s.R; E = s.E; nid = s.nid;
+}
+
 // ── STATE ──
 let P = [], R = [], nid = 1, E = [];
 const PRICE = 75;
 let sortMode = 'none'; // 'none' | 'name' | 'loc'
-const SK = 'teramo_v3';
+const SK = 'teramo_v4';
 
 // ── THEME ──
 function toggleTheme() {
@@ -531,14 +649,24 @@ document.getElementById('rmod').addEventListener('click', e => { if (e.target ==
 function createRoom() {
   const b = parseInt(document.getElementById('rbeds').value);
   if (!b || b < 1) return;
-  R.push({ id: nid++, name: 'Camera ' + (R.length + 1), beds: b, guests: [] });
+  let n = R.length + 1; while (R.some(x => x.name === 'Camera ' + n)) n++;
+  R.push({ id: nid++, name: 'Camera ' + n, beds: b, guests: [] });
   closeModal();
   renderCam();
 }
 
-function delRoom(id) { R = R.filter(r => r.id !== id); renderCam(); }
+function delRoom(id) { const r = R.find(x => x.id === id); if (r && r.guests.length && !confirm('Eliminare "' + r.name + '"? Le persone tornano in "Senza camera".')) return; R = R.filter(r => r.id !== id); renderCam(); }
 function delGuest(rid, pid) { const r = R.find(x => x.id === rid); if (r) r.guests = r.guests.filter(g => g !== pid); renderCam(); }
-function renameRoom(id, v) { const r = R.find(x => x.id === id); if (r && v.trim()) r.name = v.trim(); }
+function renameRoom(id, v) { const r = R.find(x => x.id === id); if (r && v.trim()) r.name = v.trim(); saveLocal(true); }
+function editBeds(id) {
+  const r = R.find(x => x.id === id); if (!r) return;
+  const v = prompt('Posti letto per "' + r.name + '":', r.beds);
+  if (v === null) return;
+  const b = parseInt(v);
+  if (!b || b < 1) { showToast('⚠️ Numero non valido'); return; }
+  if (b < r.guests.length) { showToast('⚠️ Ci sono già ' + r.guests.length + ' persone'); return; }
+  r.beds = b; renderCam();
+}
 
 function renderCam() {
   // unassigned
@@ -547,11 +675,17 @@ function renderCam() {
   document.getElementById('ucnt').textContent = ulist.length;
   const uEl = document.getElementById('ulist');
   if (!ulist.length) { uEl.innerHTML = '<span class="etxt">Tutti assegnati 🎉</span>'; }
-  else { uEl.innerHTML = '<div class="chips">' + ulist.map(p => `<span class="chip">${p.name}</span>`).join('') + '</div>'; }
+  else {
+    uEl.innerHTML = '';
+    const chips = document.createElement('div'); chips.className = 'chips';
+    ulist.forEach(p => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = p.name; chips.appendChild(c); });
+    uEl.appendChild(chips);
+  }
 
   // rooms
   const rEl = document.getElementById('rlist');
   rEl.innerHTML = '';
+  document.querySelectorAll('.acdrop').forEach(d => d.remove());
   if (!R.length) {
     rEl.innerHTML = '<div class="empty"><div class="ei">🛏</div>Nessuna camera. Creane una!</div>';
     updCounters(); return;
@@ -571,6 +705,8 @@ function renderCam() {
     const cap = document.createElement('span');
     cap.className = 'rcap' + (full ? ' full' : '');
     cap.textContent = occ + '/' + r.beds;
+    cap.style.cursor = 'pointer'; cap.title = 'Cambia posti letto';
+    cap.onclick = () => editBeds(r.id);
     const db = document.createElement('button');
     db.className = 'delbtn'; db.type = 'button'; db.textContent = '🗑';
     db.onclick = () => delRoom(r.id);
@@ -688,6 +824,7 @@ function updCounters() {
   const netEl = document.getElementById('cnet');
   netEl.textContent = '€ ' + net.toLocaleString('it-IT');
   netEl.className = 'money-net ' + (net < 0 ? 'neg' : 'pos');
+  saveLocal(true);
 }
 
 // ── EXPENSES / BILANCIO ──
@@ -747,9 +884,15 @@ function renderBudget() {
 }
 
 // ── STORAGE ──
-function saveLocal() {
-  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid, E })); showToast('💾 Salvato!'); }
-  catch(e) { showToast('❌ Errore'); }
+function saveLocal(silent) {
+  try { localStorage.setItem(SK, JSON.stringify({ P, R, nid, E })); if (!silent) showToast('💾 Salvato!'); }
+  catch(e) { if (!silent) showToast('❌ Errore'); }
+}
+function resetSeed() {
+  if (!confirm('Ripristinare i dati iniziali? Tutte le modifiche fatte andranno perse.')) return;
+  loadSeed(); saveLocal(true);
+  renderBus(); renderCam(); renderBudget();
+  showToast('↺ Dati ripristinati');
 }
 function exportJSON() {
   dl(JSON.stringify({ P, R, nid, E }, null, 2), 'teramo_' + ts() + '.json', 'application/json');
@@ -784,6 +927,48 @@ function exportLista() {
   dl(lines.join('\n'), 'lista_bus_teramo.txt', 'text/plain;charset=utf-8');
   showToast('📋 Lista esportata!');
 }
+// ── EXPORT CAMERE WHATSAPP ──
+function buildWaText() {
+  const byName = (a, b) => a.localeCompare(b, 'it', { sensitivity: 'base', numeric: true });
+  const rooms = R.slice().sort((a, b) => byName(a.name, b.name) || a.id - b.id);
+  const lines = ['🏨 *CAMERE — VIAGGIO A TERAMO*', '_10 → 11 Ottobre_', ''];
+  let placed = 0;
+  rooms.forEach(r => {
+    const names = r.guests.map(g => P.find(x => x.id === g)).filter(Boolean).map(p => p.name).sort(byName);
+    placed += names.length;
+    lines.push('🛏 *' + r.name + '* (' + names.length + '/' + r.beds + ')');
+    if (!names.length) lines.push('   _vuota_');
+    names.forEach(n => lines.push('   • ' + n));
+    lines.push('');
+  });
+  const asgn = new Set(R.flatMap(r => r.guests));
+  const un = P.filter(p => !asgn.has(p.id)).map(p => p.name).sort(byName);
+  if (un.length) {
+    lines.push('⚠️ *Senza camera* (' + un.length + ')');
+    un.forEach(n => lines.push('   • ' + n));
+    lines.push('');
+  }
+  lines.push('👥 ' + placed + ' persone in ' + rooms.length + ' camere');
+  return lines.join('\n');
+}
+function openWa() {
+  if (!R.length) { showToast('⚠️ Nessuna camera'); return; }
+  document.getElementById('watxt').value = buildWaText();
+  document.getElementById('wamod').classList.add('on');
+}
+function closeWa() { document.getElementById('wamod').classList.remove('on'); }
+document.getElementById('wamod').addEventListener('click', e => { if (e.target === e.currentTarget) closeWa(); });
+function copyWa() {
+  const t = document.getElementById('watxt');
+  const done = () => showToast('📋 Copiato! Incollalo su WhatsApp');
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(t.value).then(done).catch(() => { t.select(); document.execCommand('copy'); done(); });
+  } else { t.select(); document.execCommand('copy'); done(); }
+}
+function sendWa() {
+  window.open('https://wa.me/?text=' + encodeURIComponent(document.getElementById('watxt').value), '_blank');
+}
+
 function dl(content, name, type) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([content], { type }));
@@ -800,6 +985,7 @@ function showToast(m) {
 }
 
 // ── INIT ──
+loadSeed();
 try {
   const sv = localStorage.getItem(SK);
   if (sv) { const s = JSON.parse(sv); P = s.P || []; R = s.R || []; nid = s.nid || 1; E = Array.isArray(s.E) ? s.E : []; }
